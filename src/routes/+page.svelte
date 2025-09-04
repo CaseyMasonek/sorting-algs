@@ -5,7 +5,7 @@
 
 	let size = $state(5);
 	let items = $state(genList(5));
-    let delay = $state(1000)
+	let delay = $state(1000);
 
 	/**
 	 * Generate an empty list with n items to be sorted
@@ -15,7 +15,7 @@
 		const values = [...Array(numItems).keys()];
 
 		return values.map((value) => {
-			return { value: value, selected: false };
+			return { value: value, selected: false, special: false };
 		});
 	}
 
@@ -41,7 +41,7 @@
 	/**
 	 * Run bubble sort on the items
 	 */
-	async function sort() {
+	async function bubbleSort() {
 		let sorted = false;
 
 		while (!sorted) {
@@ -73,6 +73,104 @@
 			}
 		}
 	}
+
+	function splitArray(arrays: any[][]) {
+		let newArrays = [];
+
+		for (const arr of arrays) {
+			if (arr.length == 1) {
+				newArrays.push(arr);
+				continue;
+			}
+
+			const middle = Math.ceil(arr.length / 2);
+
+			newArrays.push(arr.slice(0, middle));
+			newArrays.push(arr.slice(middle));
+		}
+
+		return newArrays;
+	}
+
+	async function quickSort() {
+		let itemsArray = [items];
+
+		let sorted = false;
+
+		while (!sorted) {
+			sorted = true;
+
+			for (let arr of itemsArray) {
+				let pivot = arr[0];
+				pivot.special = true;
+
+				if (arr.length > 1) sorted = false;
+
+				console.log('pivot:', $state.snapshot(pivot));
+
+				for (let item of arr) {
+					console.log('comparing:', $state.snapshot(pivot), $state.snapshot(item));
+					if (item == pivot) continue;
+
+					item.selected = true;
+
+					await sleep(delay);
+
+					if (item.value < pivot.value) {
+						console.log('swap!');
+
+						const itemIdx = arr.indexOf(item);
+						const insertIdx = arr.indexOf(pivot);
+
+						arr.splice(itemIdx, 1);
+						arr.splice(insertIdx, 0, item);
+
+						items = itemsArray.flatMap((m) => m);
+
+						await sleep(delay);
+					} else console.log('dont swap');
+
+					item.selected = false;
+				}
+
+				pivot.special = false;
+			}
+
+			itemsArray = splitArray(itemsArray);
+
+			console.log($state.snapshot(itemsArray));
+		}
+	}
+
+	async function selectionSort() {
+        for (const item of items) {
+            const idx = items.indexOf(item)
+            const pool = items.slice(idx)
+
+            let min = pool[0];
+            min.special = true
+            for (const i of pool) {
+                i.selected = true
+                await sleep(delay)
+                if (i.value < min.value) {
+                    i.selected = false
+                    i.special = true
+
+                    min.special = false
+
+                    await sleep(delay)
+
+                    min = i
+                }
+
+                i.selected = false
+            }
+
+            const removed = items.splice(items.indexOf(min),1)
+            min.special = false
+            items.splice(idx,0,removed[0])
+        }
+	}
 </script>
 
 <div class="flex h-screen w-full flex-row items-center justify-center">
@@ -87,26 +185,40 @@
 
 			<button
 				class="rounded-xl border-2 bg-gray-300 px-3 hover:bg-gray-200 active:bg-gray-100"
-				onclick={sort}
+				onclick={bubbleSort}
 			>
-				Sort
+				Bubble Sort
+			</button>
+
+			<button
+				class="rounded-xl border-2 bg-gray-300 px-3 hover:bg-gray-200 active:bg-gray-100"
+				onclick={selectionSort}
+			>
+				Selection Sort
 			</button>
 
 			<div>
-				<label># of items: </label>
-				<input type="range" min="2" max="19" defaultValue="5" bind:value={size} />
+				<label for="numItems"># of items: </label>
+				<input id="numItems" type="range" min="2" max="19" defaultValue="5" bind:value={size} />
 			</div>
 
-            <div>
-				<label>Delay </label>
-				<input type="range" min="50" max="1000" defaultValue="1000" bind:value={delay} />
+			<div>
+				<label for="speed">Speed </label>
+
+				<select class="rounded-xl border-2" bind:value={delay}>
+					<option value={1000}> Slow </option>
+					<option value={300}> Medium </option>
+					<option value={100}> Fast </option>
+					<option value={25}> Very fast </option>
+					<option value={1}>Pretty much instant</option>
+				</select>
 			</div>
 		</div>
 
 		<div class="flex w-full flex-row">
 			{#each items as item (item.value)}
-				<div animate:flip={{duration: delay}}>
-					<Item number={item.value} order={items} selected={item.selected} />
+				<div animate:flip={{ duration: delay }}>
+					<Item order={items} {...item} />
 				</div>
 			{/each}
 		</div>

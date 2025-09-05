@@ -7,6 +7,8 @@
 	let items = $state(genList(5));
 	let delay = $state(1000);
 
+	type Item = { value: number; selected: boolean; special: boolean };
+
 	/**
 	 * Generate an empty list with n items to be sorted
 	 * @param numItems
@@ -26,6 +28,28 @@
 	$effect(() => {
 		changeSize(size);
 	});
+
+	async function bogoSort() {
+		shuffle()
+
+		await sleep(delay)
+
+		let shouldBogosort = false
+		
+		for (const item of items.slice(0,-1)) {
+			const idx = items.indexOf(item)
+			const nextItem = items[idx + 1]
+
+			if (item.value > nextItem.value) {			
+				shouldBogosort = true
+				break
+			}
+		}
+
+		if (shouldBogosort) {
+			bogoSort()
+		}
+	}
 
 	/**
 	 * Randomize the order of the list
@@ -74,7 +98,7 @@
 		}
 	}
 
-	function splitArray(arrays: any[][]) {
+	function splitArray(arrays: Item[][]) {
 		let newArrays = [];
 
 		for (const arr of arrays) {
@@ -92,90 +116,195 @@
 		return newArrays;
 	}
 
-	async function quickSort() {
-		let itemsArray = [items];
+	let mergeSortArrays = $state([]);
+	$inspect(mergeSortArrays);
 
-		let sorted = false;
+	async function mergeSort(array: Item[]): Promise<Item[]> {
+		if (array.length <= 1) return array;
 
-		while (!sorted) {
-			sorted = true;
+		const midpoint = Math.floor(array.length / 2);
+		const left = array.slice(0, midpoint);
+		const right = array.slice(midpoint);
 
-			for (let arr of itemsArray) {
-				let pivot = arr[0];
-				pivot.special = true;
+		await sleep(delay);
 
-				if (arr.length > 1) sorted = false;
+		console.log('lengths?', left.length, right.length);
 
-				console.log('pivot:', $state.snapshot(pivot));
+		const sortedLeft = await mergeSort(left);
+		const sortedRight = await mergeSort(right);
 
-				for (let item of arr) {
-					console.log('comparing:', $state.snapshot(pivot), $state.snapshot(item));
-					if (item == pivot) continue;
+		console.log('lengths!', left.length, right.length);
 
-					item.selected = true;
+		mergeSortArrays.splice(0, 1);
+		return await merge(sortedLeft, sortedRight);
+	}
 
-					await sleep(delay);
+	let leftState = $state<Item[]>([]);
+	let rightState = $state<Item[]>([]);
+	let result = $state<Item[]>([]);
 
-					if (item.value < pivot.value) {
-						console.log('swap!');
+	async function merge(left: Item[], right: Item[]) {
+		result = [];
 
-						const itemIdx = arr.indexOf(item);
-						const insertIdx = arr.indexOf(pivot);
+		leftState = left;
+		rightState = right;
 
-						arr.splice(itemIdx, 1);
-						arr.splice(insertIdx, 0, item);
+		while (left.length > 0 && right.length > 0) {
+			console.log('now we have left:', left.length, 'and right:', right.length);
+			console.log('comparing', left[0].value, right[0].value);
 
-						items = itemsArray.flatMap((m) => m);
+			left[0].selected = true;
+			right[0].selected = true;
 
-						await sleep(delay);
-					} else console.log('dont swap');
+			await sleep(delay);
 
-					item.selected = false;
-				}
+			left[0].selected = false;
+			right[0].selected = false;
 
-				pivot.special = false;
+			if (left[0].value < right[0].value) {
+				result.push(left[0]);
+				left.splice(0, 1);
+			} else {
+				result.push(right[0]);
+				right.splice(0, 1);
 			}
+		}
 
-			itemsArray = splitArray(itemsArray);
+		while (left.length > 0) {
+			await sleep(delay)
+			result.push(left[0]);
+			left.splice(0, 1);
+		}
+		while (right.length > 0) {
+			await sleep(delay)
+			result.push(right[0]);
+			right.splice(0, 1);
+		}
 
-			console.log($state.snapshot(itemsArray));
+		await sleep(delay)
+
+		return result;
+	}
+
+	async function runMergeSort() {
+		items = await mergeSort(items)
+		result = []
+	}
+
+	async function quickSort(array: Item[]) {
+		if (array.length < 2) {
+			return;
+		}
+
+		const pivot = array[getMedian(array)];
+		pivot.special = true;
+
+		for (const item of array) {
+			if (item == pivot) continue;
+
+			if (item.value < pivot.value) {
+				array.splice(array.indexOf(item), 1);
+				array.splice(0, 0, item);
+			}
+		}
+
+		const newArrays = [array.slice(0, array.indexOf(pivot)), array.slice(array.indexOf(pivot))];
+
+		console.log(newArrays);
+
+		for (const arr of newArrays) {
+			quickSort(arr);
 		}
 	}
 
+	// async function quickSort() {
+	// 	let itemsArray = [items];
+
+	// 	let sorted = false;
+
+	// 	while (!sorted) {
+	// 		sorted = true;
+
+	// 		for (let arr of itemsArray) {
+	// 			let pivot = arr[0];
+	// 			pivot.special = true;
+
+	// 			if (arr.length > 1) sorted = false;
+
+	// 			console.log('pivot:', $state.snapshot(pivot));
+
+	// 			for (let item of arr) {
+	// 				console.log('comparing:', $state.snapshot(pivot), $state.snapshot(item));
+	// 				if (item == pivot) continue;
+
+	// 				item.selected = true;
+
+	// 				await sleep(delay);
+
+	// 				if (item.value < pivot.value) {
+	// 					console.log('swap!');
+
+	// 					const itemIdx = arr.indexOf(item);
+	// 					const insertIdx = arr.indexOf(pivot);
+
+	// 					arr.splice(itemIdx, 1);
+	// 					arr.splice(insertIdx, 0, item);
+
+	// 					items = itemsArray.flatMap((m) => m);
+
+	// 					await sleep(delay);
+	// 				} else console.log('dont swap');
+
+	// 				item.selected = false;
+	// 			}
+
+	// 			pivot.special = false;
+	// 		}
+
+	// 		itemsArray = splitArray(itemsArray);
+
+	// 		console.log($state.snapshot(itemsArray));
+	// 	}
+	// }
+
+	function getMedian(array: { value: number }[]) {
+		return array.map((i) => i.value).reduce((acc, i) => (acc += 1)) / array.length;
+	}
+
 	async function selectionSort() {
-        for (const item of items) {
-            const idx = items.indexOf(item)
-            const pool = items.slice(idx)
+		for (const item of items) {
+			const idx = items.indexOf(item);
+			const pool = items.slice(idx);
 
-            let min = pool[0];
-            min.special = true
-            for (const i of pool) {
-                i.selected = true
-                await sleep(delay)
-                if (i.value < min.value) {
-                    i.selected = false
-                    i.special = true
+			let min = pool[1];
+			min.special = true;
+			for (const i of pool) {
+				i.selected = true;
+				await sleep(delay);
+				if (i.value < min.value) {
+					i.selected = false;
+					i.special = true;
 
-                    min.special = false
+					min.special = false;
 
-                    await sleep(delay)
+					await sleep(delay);
 
-                    min = i
-                }
+					min = i;
+				}
 
-                i.selected = false
-            }
+				i.selected = false;
+			}
 
-            const removed = items.splice(items.indexOf(min),1)
-            min.special = false
-            items.splice(idx,0,removed[0])
-        }
+			const removed = items.splice(items.indexOf(min), 1);
+			min.special = false;
+			items.splice(idx, 0, removed[0]);
+		}
 	}
 </script>
 
 <div class="flex h-screen w-full flex-row items-center justify-center">
-	<div class="grid w-200 gap-y-3 rounded-2xl border-2 p-3">
-		<div class="flex w-full flex-row justify-around">
+	<div class="grid h-1/3 w-200 gap-y-3 rounded-2xl border-2 p-3">
+		<div class="grid w-full grid-cols-3 gap-x-5">
 			<button
 				class="rounded-xl border-2 bg-gray-300 px-3 hover:bg-gray-200 active:bg-gray-100"
 				onclick={shuffle}
@@ -183,6 +312,25 @@
 				Shuffle
 			</button>
 
+			<div>
+				<label for="numItems"># of items: </label>
+				<input id="numItems" type="range" min="2" max="19" defaultValue="5" bind:value={size} />
+			</div>
+
+			<div>
+				<label for="speed">Speed: </label>
+
+				<select class="rounded-xl border-2" bind:value={delay}>
+					<option value={1000}> Slow </option>
+					<option value={300}> Medium </option>
+					<option value={100}> Fast </option>
+					<option value={25}> Very fast </option>
+					<option value={1}>Pretty much instant</option>
+				</select>
+			</div>
+		</div>
+
+		<div>
 			<button
 				class="rounded-xl border-2 bg-gray-300 px-3 hover:bg-gray-200 active:bg-gray-100"
 				onclick={bubbleSort}
@@ -197,30 +345,53 @@
 				Selection Sort
 			</button>
 
-			<div>
-				<label for="numItems"># of items: </label>
-				<input id="numItems" type="range" min="2" max="19" defaultValue="5" bind:value={size} />
-			</div>
+			<button
+				class="rounded-xl border-2 bg-gray-300 px-3 hover:bg-gray-200 active:bg-gray-100"
+				onclick={runMergeSort}
+			>
+				Merge Sort
+			</button>
 
-			<div>
-				<label for="speed">Speed </label>
-
-				<select class="rounded-xl border-2" bind:value={delay}>
-					<option value={1000}> Slow </option>
-					<option value={300}> Medium </option>
-					<option value={100}> Fast </option>
-					<option value={25}> Very fast </option>
-					<option value={1}>Pretty much instant</option>
-				</select>
-			</div>
+			<button
+				class="rounded-xl border-2 bg-gray-300 px-3 hover:bg-gray-200 active:bg-gray-100"
+				onclick={bogoSort}
+			>
+				BogoSort
+			</button>
 		</div>
 
-		<div class="flex w-full flex-row">
-			{#each items as item (item.value)}
-				<div animate:flip={{ duration: delay }}>
-					<Item order={items} {...item} />
+		<div class="grid grid-rows-3">
+			<div class="flex w-full flex-row">
+				{#each items as item (item.value)}
+					<div animate:flip={{ duration: delay }}>
+						<Item order={items} {...item} />
+					</div>
+				{/each}
+			</div>
+
+			<div class="grid w-full grid-cols-2">
+				<div class="flex w-full flex-row">
+					{#each leftState as item (item.value)}
+						<div>
+							<Item order={items} {...item} />
+						</div>
+					{/each}
 				</div>
-			{/each}
+				<div class="flex w-full flex-row">
+					{#each rightState as item (item.value)}
+						<div>
+							<Item order={items} {...item} />
+						</div>
+					{/each}
+				</div>
+			</div>
+			<div class="flex w-full flex-row">
+				{#each result as item (item.value)}
+					<div>
+						<Item order={items} {...item} />
+					</div>
+				{/each}
+			</div>
 		</div>
 	</div>
 </div>

@@ -300,6 +300,57 @@
 			items.splice(idx, 0, removed[0]);
 		}
 	}
+
+	// 1 3 4 2
+
+	async function insertionSort() {
+
+		let shouldSwap = false
+
+		for (const item of items.slice(1)) {
+			console.log("looking at",item.value)
+
+			item.special = true
+
+			await sleep(delay)
+
+			const idx = items.indexOf(item)
+			let pastIdx = items.indexOf(item) - 1
+
+			while (pastIdx >= 0) {
+				console.log(idx,pastIdx)
+
+				const pastItem = items[pastIdx]
+
+				pastItem.selected = true
+
+				console.log("comparing",item.value,pastItem.value)
+
+				await sleep(delay)
+
+				pastItem.selected = false
+
+				if (pastItem.value < item.value) {
+					console.log(`${pastItem.value} (past item) < ${item.value}! this means that it is now time to swap (or not swap at all)!`)
+					break
+				}
+
+				if (!shouldSwap) shouldSwap = true
+
+				console.log("larger, comparing next item")
+				pastIdx--
+			}
+
+			item.special = false
+
+			//console.log(`${pastItem.value} (past item) > ${item.value}! swapping position`)
+			
+			if (shouldSwap) {
+				items.splice(idx,1)
+				items.splice(pastIdx + 1,0,item)
+			}
+		}
+	}
 </script>
 
 <div class="flex h-screen w-full flex-row items-center justify-center">
@@ -321,7 +372,8 @@
 				<label for="speed">Speed: </label>
 
 				<select class="rounded-xl border-2" bind:value={delay}>
-					<option value={1000}> Slow </option>
+					<option value={3000}>Very slow</option>
+					<option value={1000} selected> Slow </option>
 					<option value={300}> Medium </option>
 					<option value={100}> Fast </option>
 					<option value={25}> Very fast </option>
@@ -357,6 +409,13 @@
 				onclick={bogoSort}
 			>
 				BogoSort
+			</button>
+
+			<button
+				class="rounded-xl border-2 bg-gray-300 px-3 hover:bg-gray-200 active:bg-gray-100"
+				onclick={insertionSort}
+			>
+				Insertion Sort
 			</button>
 		</div>
 

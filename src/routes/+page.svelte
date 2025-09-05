@@ -1,11 +1,12 @@
 <script lang="ts">
-	import { resolve } from '$app/paths';
 	import Item from '../components/item.svelte';
 	import { flip } from 'svelte/animate';
+	import LittleItem from '../components/littleItem.svelte';
 
 	let size = $state(5);
 	let items = $state(genList(5));
 	let delay = $state(1000);
+	let mode = $state<'large' | 'small'>('large');
 
 	type Item = { value: number; selected: boolean; special: boolean };
 
@@ -23,6 +24,9 @@
 
 	function changeSize(size: number) {
 		items = genList(size);
+
+		if (size >= 19) mode = 'small'
+		else mode = 'large'
 	}
 
 	$effect(() => {
@@ -30,24 +34,24 @@
 	});
 
 	async function bogoSort() {
-		shuffle()
+		shuffle();
 
-		await sleep(delay)
+		await sleep(delay);
 
-		let shouldBogosort = false
-		
-		for (const item of items.slice(0,-1)) {
-			const idx = items.indexOf(item)
-			const nextItem = items[idx + 1]
+		let shouldBogosort = false;
 
-			if (item.value > nextItem.value) {			
-				shouldBogosort = true
-				break
+		for (const item of items.slice(0, -1)) {
+			const idx = items.indexOf(item);
+			const nextItem = items[idx + 1];
+
+			if (item.value > nextItem.value) {
+				shouldBogosort = true;
+				break;
 			}
 		}
 
 		if (shouldBogosort) {
-			bogoSort()
+			bogoSort();
 		}
 	}
 
@@ -171,24 +175,24 @@
 		}
 
 		while (left.length > 0) {
-			await sleep(delay)
+			await sleep(delay);
 			result.push(left[0]);
 			left.splice(0, 1);
 		}
 		while (right.length > 0) {
-			await sleep(delay)
+			await sleep(delay);
 			result.push(right[0]);
 			right.splice(0, 1);
 		}
 
-		await sleep(delay)
+		await sleep(delay);
 
 		return result;
 	}
 
 	async function runMergeSort() {
-		items = await mergeSort(items)
-		result = []
+		items = await mergeSort(items);
+		result = [];
 	}
 
 	async function quickSort(array: Item[]) {
@@ -304,50 +308,51 @@
 	// 1 3 4 2
 
 	async function insertionSort() {
-
-		let shouldSwap = false
+		let shouldSwap = false;
 
 		for (const item of items.slice(1)) {
-			console.log("looking at",item.value)
+			console.log('looking at', item.value);
 
-			item.special = true
+			item.special = true;
 
-			await sleep(delay)
+			await sleep(delay);
 
-			const idx = items.indexOf(item)
-			let pastIdx = items.indexOf(item) - 1
+			const idx = items.indexOf(item);
+			let pastIdx = items.indexOf(item) - 1;
 
 			while (pastIdx >= 0) {
-				console.log(idx,pastIdx)
+				console.log(idx, pastIdx);
 
-				const pastItem = items[pastIdx]
+				const pastItem = items[pastIdx];
 
-				pastItem.selected = true
+				pastItem.selected = true;
 
-				console.log("comparing",item.value,pastItem.value)
+				console.log('comparing', item.value, pastItem.value);
 
-				await sleep(delay)
+				await sleep(delay);
 
-				pastItem.selected = false
+				pastItem.selected = false;
 
 				if (pastItem.value < item.value) {
-					console.log(`${pastItem.value} (past item) < ${item.value}! this means that it is now time to swap (or not swap at all)!`)
-					break
+					console.log(
+						`${pastItem.value} (past item) < ${item.value}! this means that it is now time to swap (or not swap at all)!`
+					);
+					break;
 				}
 
-				if (!shouldSwap) shouldSwap = true
+				if (!shouldSwap) shouldSwap = true;
 
-				console.log("larger, comparing next item")
-				pastIdx--
+				console.log('larger, comparing next item');
+				pastIdx--;
 			}
 
-			item.special = false
+			item.special = false;
 
 			//console.log(`${pastItem.value} (past item) > ${item.value}! swapping position`)
-			
+
 			if (shouldSwap) {
-				items.splice(idx,1)
-				items.splice(pastIdx + 1,0,item)
+				items.splice(idx, 1);
+				items.splice(pastIdx + 1, 0, item);
 			}
 		}
 	}
@@ -365,7 +370,7 @@
 
 			<div>
 				<label for="numItems"># of items: </label>
-				<input id="numItems" type="range" min="2" max="19" defaultValue="5" bind:value={size} />
+				<input id="numItems" type="range" min="2" max={95} defaultValue="5" bind:value={size} />
 			</div>
 
 			<div>
@@ -422,8 +427,12 @@
 		<div class="grid grid-rows-3">
 			<div class="flex w-full flex-row">
 				{#each items as item (item.value)}
-					<div animate:flip={{ duration: delay }}>
-						<Item order={items} {...item} />
+					<div animate:flip={{ duration: delay }} class="flex -bottom">
+						{#if mode == 'large'}
+							<Item order={items} {...item} />
+						{:else}
+							<LittleItem order={items} {...item} />
+						{/if}
 					</div>
 				{/each}
 			</div>
@@ -432,14 +441,22 @@
 				<div class="flex w-full flex-row">
 					{#each leftState as item (item.value)}
 						<div>
-							<Item order={items} {...item} />
+							{#if mode == 'large'}
+								<Item order={items} {...item} />
+							{:else}
+								<LittleItem order={items} {...item} />
+							{/if}
 						</div>
 					{/each}
 				</div>
 				<div class="flex w-full flex-row">
 					{#each rightState as item (item.value)}
 						<div>
-							<Item order={items} {...item} />
+							{#if mode == 'large'}
+								<Item order={items} {...item} />
+							{:else}
+								<LittleItem order={items} {...item} />
+							{/if}
 						</div>
 					{/each}
 				</div>
@@ -447,7 +464,11 @@
 			<div class="flex w-full flex-row">
 				{#each result as item (item.value)}
 					<div>
-						<Item order={items} {...item} />
+						{#if mode == 'large'}
+							<Item order={items} {...item} />
+						{:else}
+							<LittleItem order={items} {...item} />
+						{/if}
 					</div>
 				{/each}
 			</div>

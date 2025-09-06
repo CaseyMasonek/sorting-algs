@@ -121,80 +121,167 @@
 		return newArrays;
 	}
 
-	let mergeSortArrays = $state([]);
-	$inspect(mergeSortArrays);
-
-	async function mergeSort(array: Item[]): Promise<Item[]> {
-		if (array.length <= 1) return array;
-
-		const midpoint = Math.floor(array.length / 2);
-		const left = array.slice(0, midpoint);
-		const right = array.slice(midpoint);
-
-		await sleep(delay);
-
-		console.log('lengths?', left.length, right.length);
-
-		const sortedLeft = await mergeSort(left);
-		const sortedRight = await mergeSort(right);
-
-		console.log('lengths!', left.length, right.length);
-
-		mergeSortArrays.splice(0, 1);
-		return await merge(sortedLeft, sortedRight);
+	function runMergeSort() {
+		mergeSort(0,items.length)
 	}
 
-	let leftState = $state<Item[]>([]);
-	let rightState = $state<Item[]>([]);
-	let result = $state<Item[]>([]);
+	type Range = {
+		start: number,
+		end: number
+	}
 
-	async function merge(left: Item[], right: Item[]) {
-		result = [];
+	async function mergeSort(startIdx: number, endIdx: number) : Promise<Range> {
+		if (startIdx > endIdx) alert("!!!!")
 
-		leftState = left;
-		rightState = right;
+		const section = items.slice(startIdx,endIdx)
+
+		if (section.length == 1) return {start:startIdx,end:endIdx}
+
+		const midpoint = Math.floor(section.length / 2) + startIdx;
+
+		const left = await mergeSort(startIdx,midpoint)
+		const right = await mergeSort(midpoint,endIdx)
+
+		return merge(left,right)
+	}
+
+	async function merge(leftRange:Range,rightRange:Range) : Promise<Range> {
+		let left = items.slice(leftRange.start,leftRange.end)
+		let right = items.slice(rightRange.start,rightRange.end)
+
+		const firstIdx = leftRange.start < rightRange.start ? leftRange.start : rightRange.start
+		const lastIdx = leftRange.end > rightRange.end ? leftRange.end : rightRange.end
+
+		let idx = firstIdx
 
 		while (left.length > 0 && right.length > 0) {
-			console.log('now we have left:', left.length, 'and right:', right.length);
-			console.log('comparing', left[0].value, right[0].value);
+			const leftItem = left[0]
+			const rightItem = right[0]
 
-			left[0].selected = true;
-			right[0].selected = true;
+			leftItem.selected = true
+			rightItem.selected = true
 
-			await sleep(delay);
+			await sleep(delay)
 
-			left[0].selected = false;
-			right[0].selected = false;
+			leftItem.selected = false
+			rightItem.selected = false
 
-			if (left[0].value < right[0].value) {
-				result.push(left[0]);
+			if (leftItem.value < rightItem.value) {
 				left.splice(0, 1);
+				console.log("left:",left)
+				const removalIdx = items.indexOf(leftItem)
+				console.log("before anything",items)
+				items.splice(removalIdx,1)
+				console.log("after remove at",removalIdx,items)
+				items.splice(idx,0,leftItem)
+				console.log("after insert at",idx,items)
 			} else {
-				result.push(right[0]);
 				right.splice(0, 1);
+				console.log("right:",left)
+				const removalIdx = items.indexOf(rightItem)
+				console.log("before anything",items)
+				items.splice(removalIdx,1)
+				console.log("after remove at",removalIdx,items)
+				items.splice(idx,0,rightItem)
+				console.log("after insert at",idx,items)
 			}
+
+			idx++
 		}
 
 		while (left.length > 0) {
-			await sleep(delay);
-			result.push(left[0]);
-			left.splice(0, 1);
+			const leftItem = left.splice(0, 1)[0];
+			const removalIdx = items.indexOf(leftItem)
+			items.splice(removalIdx,1)
+			items.splice(idx,0,leftItem)
+			idx++
 		}
+
 		while (right.length > 0) {
-			await sleep(delay);
-			result.push(right[0]);
-			right.splice(0, 1);
+			const rightItem = right.splice(0, 1)[0];
+			const removalIdx = items.indexOf(rightItem)
+			items.splice(removalIdx,1)
+			items.splice(idx,0,rightItem)
+			idx++
 		}
 
-		await sleep(delay);
-
-		return result;
+		return {start:firstIdx,end:lastIdx}
 	}
 
-	async function runMergeSort() {
-		items = await mergeSort(items);
-		result = [];
-	}
+	// let mergeSortArrays = $state([]);
+	// $inspect(mergeSortArrays);
+
+	// async function mergeSort(array: Item[]): Promise<Item[]> {
+	// 	if (array.length <= 1) return array;
+
+	// 	const midpoint = Math.floor(array.length / 2);
+	// 	const left = array.slice(0, midpoint);
+	// 	const right = array.slice(midpoint);
+
+	// 	await sleep(delay);
+
+	// 	console.log('lengths?', left.length, right.length);
+
+	// 	const sortedLeft = await mergeSort(left);
+	// 	const sortedRight = await mergeSort(right);
+
+	// 	console.log('lengths!', left.length, right.length);
+
+	// 	mergeSortArrays.splice(0, 1);
+	// 	return await merge(sortedLeft, sortedRight);
+	// }
+
+	// let leftState = $state<Item[]>([]);
+	// let rightState = $state<Item[]>([]);
+	// let result = $state<Item[]>([]);
+
+	// async function merge(left: Item[], right: Item[]) {
+	// 	result = [];
+
+	// 	leftState = left;
+	// 	rightState = right;
+
+	// 	while (left.length > 0 && right.length > 0) {
+	// 		console.log('now we have left:', left.length, 'and right:', right.length);
+	// 		console.log('comparing', left[0].value, right[0].value);
+
+	// 		left[0].selected = true;
+	// 		right[0].selected = true;
+
+	// 		await sleep(delay);
+
+	// 		left[0].selected = false;
+	// 		right[0].selected = false;
+
+	// 		if (left[0].value < right[0].value) {
+	// 			result.push(left[0]);
+	// 			left.splice(0, 1);
+	// 		} else {
+	// 			result.push(right[0]);
+	// 			right.splice(0, 1);
+	// 		}
+	// 	}
+
+	// 	while (left.length > 0) {
+	// 		await sleep(delay);
+	// 		result.push(left[0]);
+	// 		left.splice(0, 1);
+	// 	}
+	// 	while (right.length > 0) {
+	// 		await sleep(delay);
+	// 		result.push(right[0]);
+	// 		right.splice(0, 1);
+	// 	}
+
+	// 	await sleep(delay);
+
+	// 	return result;
+	// }
+
+	// async function runMergeSort() {
+	// 	items = await mergeSort(items);
+	// 	result = [];
+	// }
 
 	async function quickSort(array: Item[]) {
 		if (array.length < 2) {
@@ -444,7 +531,7 @@
 		<div class="grid grid-rows-3">
 			<div class="flex w-full flex-row">
 				{#each items as item (item.value)}
-					<div animate:flip={{ duration: delay }} class="flex -bottom">
+					<div animate:flip={{ duration: delay }} class="flex-bottom">
 						{#if mode == 'large'}
 							<Item order={items} {...item} />
 						{:else}
@@ -453,43 +540,7 @@
 					</div>
 				{/each}
 			</div>
-
-			<div class="grid w-full grid-cols-2">
-				<div class="flex w-full flex-row">
-					{#each leftState as item (item.value)}
-						<div>
-							{#if mode == 'large'}
-								<Item order={items} {...item} />
-							{:else}
-								<LittleItem order={items} {...item} />
-							{/if}
-						</div>
-					{/each}
-				</div>
-				<div class="flex w-full flex-row">
-					{#each rightState as item (item.value)}
-						<div>
-							{#if mode == 'large'}
-								<Item order={items} {...item} />
-							{:else}
-								<LittleItem order={items} {...item} />
-							{/if}
-						</div>
-					{/each}
-				</div>
 			</div>
-			<div class="flex w-full flex-row">
-				{#each result as item (item.value)}
-					<div>
-						{#if mode == 'large'}
-							<Item order={items} {...item} />
-						{:else}
-							<LittleItem order={items} {...item} />
-						{/if}
-					</div>
-				{/each}
-			</div>
-		</div>
 
 		<div class="absolute bottom-3 left-3">{info}</div>
 	</div>

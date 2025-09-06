@@ -7,7 +7,7 @@
 	let items = $state(genList(5));
 	let delay = $state(1000);
 	let mode = $state<'large' | 'small'>('large');
-	let info = $state("")
+	let info = $state('');
 
 	type Item = { value: number; selected: boolean; special: boolean };
 
@@ -26,8 +26,8 @@
 	function changeSize(size: number) {
 		items = genList(size);
 
-		if (size >= 19) mode = 'small'
-		else mode = 'large'
+		if (size >= 19) mode = 'small';
+		else mode = 'large';
 	}
 
 	$effect(() => {
@@ -122,90 +122,90 @@
 	}
 
 	function runMergeSort() {
-		mergeSort(0,items.length)
+		mergeSort(0, items.length);
 	}
 
 	type Range = {
-		start: number,
-		end: number
-	}
+		start: number;
+		end: number;
+	};
 
-	async function mergeSort(startIdx: number, endIdx: number) : Promise<Range> {
-		if (startIdx > endIdx) alert("!!!!")
+	async function mergeSort(startIdx: number, endIdx: number): Promise<Range> {
+		if (startIdx > endIdx) alert('!!!!');
 
-		const section = items.slice(startIdx,endIdx)
+		const section = items.slice(startIdx, endIdx);
 
-		if (section.length == 1) return {start:startIdx,end:endIdx}
+		if (section.length == 1) return { start: startIdx, end: endIdx };
 
 		const midpoint = Math.floor(section.length / 2) + startIdx;
 
-		const left = await mergeSort(startIdx,midpoint)
-		const right = await mergeSort(midpoint,endIdx)
+		const left = await mergeSort(startIdx, midpoint);
+		const right = await mergeSort(midpoint, endIdx);
 
-		return merge(left,right)
+		return merge(left, right);
 	}
 
-	async function merge(leftRange:Range,rightRange:Range) : Promise<Range> {
-		let left = items.slice(leftRange.start,leftRange.end)
-		let right = items.slice(rightRange.start,rightRange.end)
+	async function merge(leftRange: Range, rightRange: Range): Promise<Range> {
+		let left = items.slice(leftRange.start, leftRange.end);
+		let right = items.slice(rightRange.start, rightRange.end);
 
-		const firstIdx = leftRange.start < rightRange.start ? leftRange.start : rightRange.start
-		const lastIdx = leftRange.end > rightRange.end ? leftRange.end : rightRange.end
+		const firstIdx = leftRange.start < rightRange.start ? leftRange.start : rightRange.start;
+		const lastIdx = leftRange.end > rightRange.end ? leftRange.end : rightRange.end;
 
-		let idx = firstIdx
+		let idx = firstIdx;
 
 		while (left.length > 0 && right.length > 0) {
-			const leftItem = left[0]
-			const rightItem = right[0]
+			const leftItem = left[0];
+			const rightItem = right[0];
 
-			leftItem.selected = true
-			rightItem.selected = true
+			leftItem.selected = true;
+			rightItem.selected = true;
 
-			await sleep(delay)
+			await sleep(delay);
 
-			leftItem.selected = false
-			rightItem.selected = false
+			leftItem.selected = false;
+			rightItem.selected = false;
 
 			if (leftItem.value < rightItem.value) {
 				left.splice(0, 1);
-				console.log("left:",left)
-				const removalIdx = items.indexOf(leftItem)
-				console.log("before anything",items)
-				items.splice(removalIdx,1)
-				console.log("after remove at",removalIdx,items)
-				items.splice(idx,0,leftItem)
-				console.log("after insert at",idx,items)
+				console.log('left:', left);
+				const removalIdx = items.indexOf(leftItem);
+				console.log('before anything', items);
+				items.splice(removalIdx, 1);
+				console.log('after remove at', removalIdx, items);
+				items.splice(idx, 0, leftItem);
+				console.log('after insert at', idx, items);
 			} else {
 				right.splice(0, 1);
-				console.log("right:",left)
-				const removalIdx = items.indexOf(rightItem)
-				console.log("before anything",items)
-				items.splice(removalIdx,1)
-				console.log("after remove at",removalIdx,items)
-				items.splice(idx,0,rightItem)
-				console.log("after insert at",idx,items)
+				console.log('right:', left);
+				const removalIdx = items.indexOf(rightItem);
+				console.log('before anything', items);
+				items.splice(removalIdx, 1);
+				console.log('after remove at', removalIdx, items);
+				items.splice(idx, 0, rightItem);
+				console.log('after insert at', idx, items);
 			}
 
-			idx++
+			idx++;
 		}
 
 		while (left.length > 0) {
 			const leftItem = left.splice(0, 1)[0];
-			const removalIdx = items.indexOf(leftItem)
-			items.splice(removalIdx,1)
-			items.splice(idx,0,leftItem)
-			idx++
+			const removalIdx = items.indexOf(leftItem);
+			items.splice(removalIdx, 1);
+			items.splice(idx, 0, leftItem);
+			idx++;
 		}
 
 		while (right.length > 0) {
 			const rightItem = right.splice(0, 1)[0];
-			const removalIdx = items.indexOf(rightItem)
-			items.splice(removalIdx,1)
-			items.splice(idx,0,rightItem)
-			idx++
+			const removalIdx = items.indexOf(rightItem);
+			items.splice(removalIdx, 1);
+			items.splice(idx, 0, rightItem);
+			idx++;
 		}
 
-		return {start:firstIdx,end:lastIdx}
+		return { start: firstIdx, end: lastIdx };
 	}
 
 	// let mergeSortArrays = $state([]);
@@ -442,96 +442,101 @@
 				items.splice(idx, 1);
 				items.splice(pastIdx + 1, 0, item);
 
-				await sleep(delay)
+				await sleep(delay);
 			}
 		}
 	}
 
 	function factorial(n: number) {
-		return Array(n).keys().reduce((acc,x) => acc * (x+1),1)
+		return Array(n)
+			.keys()
+			.reduce((acc, x) => acc * (x + 1), 1);
 	}
 </script>
 
 <div class="flex h-screen w-full flex-row items-center justify-center">
-	<div class="grid h-1/3 w-200 gap-y-3 rounded-2xl border-2 p-3">
-		<div class="grid w-full grid-cols-3 gap-x-5">
-			<button
-				class="rounded-xl border-2 bg-gray-300 px-3 hover:bg-gray-200 active:bg-gray-100"
-				onclick={shuffle}
-			>
-				Shuffle
-			</button>
+	<div class="grid h-1/2 w-200 gap-y-3 rounded-2xl border-2 p-3">
+		<div class="h-20">
+			<div class="grid h-10 w-full grid-cols-3 gap-x-5">
+				<button
+					class="rounded-xl border-2 h-8 bg-gray-300 px-3 hover:bg-gray-200 active:bg-gray-100"
+					onclick={shuffle}
+				>
+					Shuffle
+				</button>
 
-			<div>
-				<label for="numItems"># of items: </label>
-				<input id="numItems" type="range" min="2" max={95} defaultValue="5" bind:value={size} />
+				<div>
+					<label for="numItems"># of items: </label>
+					<input id="numItems" type="range" min="2" max={190} defaultValue="5" bind:value={size} />
+				</div>
+
+				<div>
+					<label for="speed">Speed: </label>
+
+					<select class="rounded-xl border-2" bind:value={delay}>
+						<option value={3000}>Very slow</option>
+						<option value={1000} selected> Slow </option>
+						<option value={300}> Medium </option>
+						<option value={100}> Fast </option>
+						<option value={25}> Very fast </option>
+						<option value={0}>Pretty much instant</option>
+					</select>
+				</div>
 			</div>
 
 			<div>
-				<label for="speed">Speed: </label>
+				<button
+					class="rounded-xl border-2 bg-gray-300 px-3 hover:bg-gray-200 active:bg-gray-100"
+					onclick={bubbleSort}
+					onmouseenter={() => (info = 'Time complexity: O(n^2)')}
+					onmouseleave={() => (info = '')}
+				>
+					Bubble Sort
+				</button>
 
-				<select class="rounded-xl border-2" bind:value={delay}>
-					<option value={3000}>Very slow</option>
-					<option value={1000} selected> Slow </option>
-					<option value={300}> Medium </option>
-					<option value={100}> Fast </option>
-					<option value={25}> Very fast </option>
-					<option value={1}>Pretty much instant</option>
-				</select>
+				<button
+					class="rounded-xl border-2 bg-gray-300 px-3 hover:bg-gray-200 active:bg-gray-100"
+					onclick={selectionSort}
+					onmouseenter={() => (info = 'Time complexity: O(n^2)')}
+					onmouseleave={() => (info = '')}
+				>
+					Selection Sort
+				</button>
+
+				<button
+					class="rounded-xl border-2 bg-gray-300 px-3 hover:bg-gray-200 active:bg-gray-100"
+					onclick={runMergeSort}
+					onmouseenter={() => (info = 'Time complexity: O(n log n)')}
+					onmouseleave={() => (info = '')}
+				>
+					Merge Sort
+				</button>
+
+				<button
+					class="rounded-xl border-2 bg-gray-300 px-3 hover:bg-gray-200 active:bg-gray-100"
+					onclick={bogoSort}
+					onmouseenter={() =>
+						(info = `Time complexity: O(n!). Current odds per shuffle: 1 in ${factorial(size)}`)}
+					onmouseleave={() => (info = '')}
+				>
+					BogoSort
+				</button>
+
+				<button
+					class="rounded-xl border-2 bg-gray-300 px-3 hover:bg-gray-200 active:bg-gray-100"
+					onclick={insertionSort}
+					onmouseenter={() => (info = `Time complexity: O(n^2)`)}
+					onmouseleave={() => (info = '')}
+				>
+					Insertion Sort
+				</button>
 			</div>
-		</div>
-
-		<div>
-			<button
-				class="rounded-xl border-2 bg-gray-300 px-3 hover:bg-gray-200 active:bg-gray-100"
-				onclick={bubbleSort}
-				onmouseenter={() => info = "Time complexity: O(n^2)"}
-				onmouseleave={() => info = ""}
-			>
-				Bubble Sort
-			</button>
-
-			<button
-				class="rounded-xl border-2 bg-gray-300 px-3 hover:bg-gray-200 active:bg-gray-100"
-				onclick={selectionSort}
-				onmouseenter={() => info = "Time complexity: O(n^2)"}
-				onmouseleave={() => info = ""}
-			>
-				Selection Sort
-			</button>
-
-			<button
-				class="rounded-xl border-2 bg-gray-300 px-3 hover:bg-gray-200 active:bg-gray-100"
-				onclick={runMergeSort}
-				onmouseenter={() => info = "Time complexity: O(n log n)"}
-				onmouseleave={() => info = ""}
-			>
-				Merge Sort
-			</button>
-
-			<button
-				class="rounded-xl border-2 bg-gray-300 px-3 hover:bg-gray-200 active:bg-gray-100"
-				onclick={bogoSort}
-				onmouseenter={() => info = `Time complexity: O(n!). Current odds per shuffle: 1 in ${factorial(size)}`}
-				onmouseleave={() => info = ""}
-			>
-				BogoSort
-			</button>
-
-			<button
-				class="rounded-xl border-2 bg-gray-300 px-3 hover:bg-gray-200 active:bg-gray-100"
-				onclick={insertionSort}
-				onmouseenter={() => info = `Time complexity: O(n^2)`}
-				onmouseleave={() => info = ""}
-			>
-				Insertion Sort
-			</button>
 		</div>
 
 		<div class="grid grid-rows-3">
 			<div class="flex w-full flex-row">
 				{#each items as item (item.value)}
-					<div animate:flip={{ duration: delay }} class="flex-bottom">
+					<div animate:flip={delay > 1 ? { duration: delay } : { duration: 0 }} class="flex-bottom">
 						{#if mode == 'large'}
 							<Item order={items} {...item} />
 						{:else}
@@ -540,7 +545,7 @@
 					</div>
 				{/each}
 			</div>
-			</div>
+		</div>
 
 		<div class="absolute bottom-3 left-3">{info}</div>
 	</div>

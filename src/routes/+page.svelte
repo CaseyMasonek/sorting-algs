@@ -7,6 +7,7 @@
 	let items = $state(genList(5));
 	let delay = $state(1000);
 	let mode = $state<'large' | 'small'>('large');
+	let info = $state("")
 
 	type Item = { value: number; selected: boolean; special: boolean };
 
@@ -353,8 +354,14 @@
 			if (shouldSwap) {
 				items.splice(idx, 1);
 				items.splice(pastIdx + 1, 0, item);
+
+				await sleep(delay)
 			}
 		}
+	}
+
+	function factorial(n: number) {
+		return Array(n).keys().reduce((acc,x) => acc * (x+1),1)
 	}
 </script>
 
@@ -391,6 +398,8 @@
 			<button
 				class="rounded-xl border-2 bg-gray-300 px-3 hover:bg-gray-200 active:bg-gray-100"
 				onclick={bubbleSort}
+				onmouseenter={() => info = "Time complexity: O(n^2)"}
+				onmouseleave={() => info = ""}
 			>
 				Bubble Sort
 			</button>
@@ -398,6 +407,8 @@
 			<button
 				class="rounded-xl border-2 bg-gray-300 px-3 hover:bg-gray-200 active:bg-gray-100"
 				onclick={selectionSort}
+				onmouseenter={() => info = "Time complexity: O(n^2)"}
+				onmouseleave={() => info = ""}
 			>
 				Selection Sort
 			</button>
@@ -405,6 +416,8 @@
 			<button
 				class="rounded-xl border-2 bg-gray-300 px-3 hover:bg-gray-200 active:bg-gray-100"
 				onclick={runMergeSort}
+				onmouseenter={() => info = "Time complexity: O(n log n)"}
+				onmouseleave={() => info = ""}
 			>
 				Merge Sort
 			</button>
@@ -412,6 +425,8 @@
 			<button
 				class="rounded-xl border-2 bg-gray-300 px-3 hover:bg-gray-200 active:bg-gray-100"
 				onclick={bogoSort}
+				onmouseenter={() => info = `Time complexity: O(n!). Current odds per shuffle: 1 in ${factorial(size)}`}
+				onmouseleave={() => info = ""}
 			>
 				BogoSort
 			</button>
@@ -419,6 +434,8 @@
 			<button
 				class="rounded-xl border-2 bg-gray-300 px-3 hover:bg-gray-200 active:bg-gray-100"
 				onclick={insertionSort}
+				onmouseenter={() => info = `Time complexity: O(n^2)`}
+				onmouseleave={() => info = ""}
 			>
 				Insertion Sort
 			</button>
@@ -473,5 +490,7 @@
 				{/each}
 			</div>
 		</div>
+
+		<div class="absolute bottom-3 left-3">{info}</div>
 	</div>
 </div>

@@ -452,6 +452,77 @@
 			.keys()
 			.reduce((acc, x) => acc * (x + 1), 1);
 	}
+
+	async function shellSort() {
+		const gaps = [701, 301, 132, 57, 23, 10, 4, 1];
+
+		for (const gap of gaps) {
+			if (gap > items.length) continue
+
+			const filtered = items.filter((i) => items.indexOf(i) % gap == 0);
+
+			for (const item of filtered.slice(1)) {
+				console.log('looking at', item.value);
+
+				item.special = true;
+
+				await sleep(delay);
+
+				const idx = items.indexOf(item);
+				let pastIdx = items.indexOf(item) - gap;
+
+				let shouldSwap = false
+
+				while (pastIdx >= 0) {
+					console.log(idx, pastIdx);
+
+					const pastItem = items[pastIdx];
+
+					pastItem.selected = true;
+
+					console.log('comparing', item.value, pastItem.value);
+
+					await sleep(delay);
+
+					pastItem.selected = false;
+
+					if (pastItem.value < item.value) {
+						console.log(
+							`${pastItem.value} (past item) < ${item.value}! this means that it is now time to swap (or not swap at all)!`
+						);
+						break;
+					}
+
+					if (!shouldSwap) shouldSwap = true;
+
+					console.log('larger, comparing next item');
+					pastIdx -= gap;
+				}
+
+				item.special = false;
+
+				//console.log(`${pastItem.value} (past item) > ${item.value}! swapping position`)
+
+				if (shouldSwap) {
+					items.splice(idx,1) // remove item
+
+					let stored = items.splice(pastIdx + gap, 1, item)[0] // replace item at index it's supposed to be at 
+
+					let nextIdx = pastIdx + gap + gap
+
+					while (nextIdx < idx) {
+						console.log("idx:",nextIdx)
+						stored = items.splice(nextIdx, 1, stored)[0]
+						nextIdx += gap
+					}
+					
+					items.splice(idx,0,stored)
+
+					await sleep(delay);
+				}
+			}
+		}
+	}
 </script>
 
 <div class="flex h-screen w-full flex-row items-center justify-center">
@@ -459,7 +530,7 @@
 		<div class="h-20">
 			<div class="grid h-10 w-full grid-cols-3 gap-x-5">
 				<button
-					class="rounded-xl border-2 h-8 bg-gray-300 px-3 hover:bg-gray-200 active:bg-gray-100"
+					class="h-8 rounded-xl border-2 bg-gray-300 px-3 hover:bg-gray-200 active:bg-gray-100"
 					onclick={shuffle}
 				>
 					Shuffle
@@ -529,6 +600,16 @@
 					onmouseleave={() => (info = '')}
 				>
 					Insertion Sort
+				</button>
+
+				<button
+					class="rounded-xl border-2 bg-gray-300 px-3 hover:bg-gray-200 active:bg-gray-100"
+					onclick={shellSort}
+					onmouseenter={() =>
+						(info = `Using Ciura's gap sequence. Time complexity: O(n log n) (i think?)`)}
+					onmouseleave={() => (info = '')}
+				>
+					Shell Sort
 				</button>
 			</div>
 		</div>

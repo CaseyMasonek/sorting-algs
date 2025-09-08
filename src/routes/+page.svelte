@@ -622,7 +622,7 @@
 		<div class="grid grid-rows-3">
 			<div class="flex w-full flex-row">
 				{#each items as item (item.value)}
-					<div animate:flip={delay > 1 ? { duration: delay } : { duration: 0 }} class="flex-bottom">
+					<div animate:flip={delay > 1 ? { duration: delay } : { duration: 0 }} class="flex-bottom w-full h-60">
 						{#if mode == 'large'}
 							<Item order={items} {...item} />
 						{:else}

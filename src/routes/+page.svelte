@@ -463,6 +463,8 @@
 				const filtered = items.filter((item) => items.indexOf(item) % gap == i);
 
 				for (const item of filtered.slice(1)) {
+					info = `Current gap: ${gap}`
+
 					console.log('looking at', item.value);
 
 					item.special = true;
@@ -524,6 +526,8 @@
 				}
 			}
 		}
+
+		info = ""
 	}
 </script>
 

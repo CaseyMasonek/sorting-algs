@@ -283,30 +283,41 @@
 	// 	result = [];
 	// }
 
-	async function quickSort(array: Item[]) {
-		if (array.length < 2) {
-			return;
-		}
+	async function quickSort(start=0,end=items.length) {
+		const pool = items.slice(start,end)
 
-		const pivot = array[getMedian(array)];
-		pivot.special = true;
+		if (pool.length <= 1) return
 
-		for (const item of array) {
-			if (item == pivot) continue;
+		const pivot = pool[0]
+
+		pivot.special = true
+
+		await sleep(delay)
+
+		for (const item of pool.slice(1)) {
+			item.selected = true
+
+			await sleep(delay)
 
 			if (item.value < pivot.value) {
-				array.splice(array.indexOf(item), 1);
-				array.splice(0, 0, item);
+				const idx = items.indexOf(item)
+				items.splice(idx,1)
+				items.splice(start,0,item)
+
+				await sleep(delay)
 			}
+
+			item.selected = false
 		}
 
-		const newArrays = [array.slice(0, array.indexOf(pivot)), array.slice(array.indexOf(pivot))];
+		const newIdx = items.indexOf(pivot)
 
-		console.log(newArrays);
+		pivot.special = false
 
-		for (const arr of newArrays) {
-			quickSort(arr);
-		}
+		await sleep(delay)
+
+		await quickSort(start,newIdx)
+		await quickSort(newIdx + 1,end)
 	}
 
 	// async function quickSort() {
@@ -544,7 +555,7 @@
 
 				<div>
 					<label for="numItems"># of items: </label>
-					<input id="numItems" type="range" min="2" max={190} defaultValue="5" bind:value={size} />
+					<input id="numItems" type="range" min="2" max={200} defaultValue="5" bind:value={size} />
 				</div>
 
 				<div>
@@ -616,10 +627,19 @@
 				>
 					Shell Sort
 				</button>
+
+				<button
+					class="rounded-xl border-2 bg-gray-300 px-3 hover:bg-gray-200 active:bg-gray-100"
+					onclick={() => quickSort()}
+					onmouseenter={() => (info = `Time complexity: O(n log n)`)}
+					onmouseleave={() => (info = '')}
+				>
+					Quick Sort
+				</button>
 			</div>
 		</div>
 
-		<div class="grid grid-rows-3">
+		<div class="grid grid-rows-3 mt-4">
 			<div class="flex w-full flex-row">
 				{#each items as item (item.value)}
 					<div animate:flip={delay > 1 ? { duration: delay } : { duration: 0 }} class="flex-bottom w-full h-60">

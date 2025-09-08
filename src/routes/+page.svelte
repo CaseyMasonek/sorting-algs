@@ -572,7 +572,7 @@
 				</div>
 			</div>
 
-			<div>
+			<div class="grid gap-y-1 grid-cols-5 gap-x-2">
 				<button
 					class="rounded-xl border-2 bg-gray-300 px-3 hover:bg-gray-200 active:bg-gray-100"
 					onclick={bubbleSort}

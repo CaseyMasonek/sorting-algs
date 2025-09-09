@@ -6,7 +6,7 @@
 	let size = $state(5);
 	let items = $state(genList(5));
 	let delay = $state(1000);
-	let mode = $state<'large' | 'small'>('large');
+	let mode = $state<'large' | 'small'>('small');
 	let info = $state('');
 
 	type Item = { value: number; selected: boolean; special: boolean };
@@ -27,7 +27,7 @@
 		items = genList(size);
 
 		if (size >= 19) mode = 'small';
-		else mode = 'large';
+		else mode = 'small';
 	}
 
 	$effect(() => {
@@ -540,6 +540,66 @@
 
 		info = ""
 	}
+
+	async function coolSort() {
+		let arrs : Item[][] = []
+
+		for (const item of items) {
+			let added = false
+
+			for (const arr of arrs) {
+				if (item.value < arr.at(-1)!.value) {
+					const idx = arrs.indexOf(arr)
+					arrs[idx].push(item)
+					added = true
+					break
+				}
+			}
+
+			if (!added) {
+				arrs.push([item])
+			}
+		}
+
+		let idx = 0
+		while (idx < items.length) {
+			console.log(arrs)
+
+			const pool = arrs.flatMap(arr => arr.at(-1)).filter(i => i != undefined)
+
+			let min = pool[0]
+			min.special = true
+
+			for (const item of pool.slice(1)) {
+				console.log(item)
+				item.selected = true
+				await sleep(delay)
+				item.selected = false
+
+				if (item.value < min.value) {
+					min.special = false
+					min = item
+					min.special = true
+				}
+			}
+
+			min.special = false
+
+			await sleep(delay)
+
+			const minArrIdx = arrs.findIndex(arr => arr.find(item => item.value == min.value))
+
+			const minIdx = arrs[minArrIdx].findIndex(item => item.value == min.value)
+			arrs[minArrIdx].splice(minIdx,1)
+
+			items.splice(items.indexOf(min),1)
+			items.splice(idx,0,min)
+
+			await sleep(delay)
+
+			idx++
+		}
+	}
 </script>
 
 <div class="flex h-screen w-full flex-row items-center justify-center">
@@ -635,6 +695,15 @@
 					onmouseleave={() => (info = '')}
 				>
 					Quick Sort
+				</button>
+
+				<button
+					class="rounded-xl border-2 bg-gray-300 px-3 hover:bg-gray-200 active:bg-gray-100"
+					onclick={coolSort}
+					onmouseenter={() => (info = `Better selection sort I came up with. Proably been done before. Time complexity: ?? (worst case is O(n^2))`)}
+					onmouseleave={() => (info = '')}
+				>
+					Cool Sort
 				</button>
 			</div>
 		</div>
